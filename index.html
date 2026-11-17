@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You...</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #080c17;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-serif-luxury {
+            font-family: 'Playfair Display', serif;
+        }
+        .font-editorial {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .champagne-gold-text {
+            background: linear-gradient(135deg, #d8b467 0%, #fff1c9 32%, #c59b43 65%, #f9e7b2 88%, #b38728 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 0.4; transform: translateY(0px); }
+            50% { opacity: 0.85; transform: translateY(4px); }
+        }
+        @keyframes stage-fade-in {
+            0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes flame-flicker {
+            0%, 100% { transform: scale(1) rotate(-1deg); opacity: 0.96; }
+            25% { transform: scale(1.06, 0.95) rotate(1.5deg); opacity: 1; }
+            50% { transform: scale(0.95, 1.05) rotate(-1.5deg); opacity: 0.92; }
+            75% { transform: scale(1.04, 0.98) rotate(1deg); opacity: 1; }
+        }
+        @keyframes smoke-rise {
+            0% { opacity: 0.7; transform: translateY(0) scale(0.8); }
+            100% { opacity: 0; transform: translateY(-48px) scale(1.8); }
+        }
+        .animate-hint {
+            animation: pulse-hint 2.8s ease-in-out infinite;
+        }
+        .animate-stage {
+            animation: stage-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .candle-flame {
+            transform-origin: center bottom;
+            animation: flame-flicker 1.2s ease-in-out infinite;
+        }
+        .smoke-wisp {
+            animation: smoke-rise 1.8s ease-out forwards;
+        }
+        /* Subtle stationery paper texture */
+        .stationery-card {
+            background-color: #faf6ee;
+            background-image: radial-gradient(rgba(197, 155, 67, 0.08) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body id="pageBody" class="text-slate-100 min-h-screen flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-1000">
+
+    <!-- Royal Midnight Sapphire Ambient Glow (Activated after pull) -->
+    <div id="lightFlood" class="fixed inset-0 pointer-events-none opacity-0 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_22%,rgba(216,180,103,0.22),rgba(13,21,42,0.94)_58%,rgba(8,12,23,1)_100%)] z-0"></div>
+
+    <!-- Ambient & Celebration FX Canvas (Dust, Bokeh, Confetti, Fireworks) -->
+    <canvas id="fxCanvas" class="fixed inset-0 pointer-events-none z-10 w-full h-full"></canvas>
+
+    <!-- STAGE 0: Interactive Pull Cord Canvas -->
+    <canvas id="cordCanvas" class="fixed inset-0 z-30 w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+
+    <!-- STAGE 0: Minimalist Mystery Prompt -->
+    <div id="mysteryPrompt" class="fixed bottom-16 left-0 right-0 z-20 flex flex-col items-center justify-center pointer-events-none px-6 text-center transition-opacity duration-500">
+        <p class="text-amber-200/65 tracking-[0.32em] uppercase text-xs font-medium animate-hint">
+            Pull the cord
+        </p>
+    </div>
+
+    <!-- STAGE 1: THE REVEAL ("Happy Birthday") -->
+    <section id="stage1" class="hidden relative z-30 w-full max-w-2xl px-6 py-10 flex flex-col items-center justify-between min-h-screen text-center">
+        <!-- Top Spacer / Sender Tag -->
+        <div class="pt-6 sm:pt-10 animate-stage">
+            <span id="senderBadge" class="inline-block px-4 py-1.5 rounded-full border border-amber-300/25 bg-slate-900/50 backdrop-blur-md text-amber-200/80 text-[11px] sm:text-xs tracking-[0.25em] uppercase">
+                A surprise from Toufiq
+            </span>
+        </div>
+
+        <!-- Centerpiece Birthday Typography -->
+        <div class="my-auto space-y-5 animate-stage">
+            <p class="text-amber-300/70 tracking-[0.35em] uppercase text-xs sm:text-sm font-medium">
+                Wishing You A Wonderful
+            </p>
+            <h1 class="text-5xl sm:text-7xl md:text-8xl font-serif-luxury font-bold champagne-gold-text leading-tight tracking-tight drop-shadow-[0_6px_30px_rgba(216,180,103,0.22)]">
+                Happy Birthday
+            </h1>
+            <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-amber-300/60 to-transparent mx-auto"></div>
+            <h2 id="friendHeroName" class="text-2xl sm:text-4xl font-editorial italic text-amber-50/95 tracking-wide">
+                Sakif
+            </h2>
+        </div>
+
+        <!-- Very Small, Delicate Next Page Link -->
+        <div class="pb-8 sm:pb-10">
+            <button id="toStage2Btn" class="text-[11px] tracking-[0.26em] lowercase text-amber-200/55 hover:text-amber-200 transition-colors duration-300 py-2 px-4 cursor-pointer">
+                visit next page &rarr;
+            </button>
+        </div>
+    </section>
+
+    <!-- STAGE 2: INTERACTIVE CAKE & CANDLES -->
+    <section id="stage2" class="hidden relative z-30 w-full max-w-xl px-6 py-10 flex flex-col items-center justify-between min-h-screen text-center">
+        <div class="pt-6 sm:pt-8 space-y-2 animate-stage">
+            <p class="text-amber-300/70 tracking-[0.28em] uppercase text-[11px] font-medium">
+                Make A Wish
+            </p>
+            <h2 id="cakePromptTitle" class="text-2xl sm:text-4xl font-serif-luxury font-semibold text-amber-50">
+                Tap the candles to blow them out
+            </h2>
+        </div>
+
+        <!-- Luxury Illustrated SVG Birthday Cake -->
+        <div id="cakeInteractiveArea" class="my-auto relative flex flex-col items-center justify-center cursor-pointer group p-4 animate-stage">
+            <!-- Warm Ambient Candle Halo -->
+            <div id="candleHalo" class="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none transition-opacity duration-1000"></div>
+
+            <svg id="birthdayCakeSvg" class="w-64 h-64 sm:w-80 sm:h-80 overflow-visible drop-shadow-[0_20px_35px_rgba(0,0,0,0.65)] transition-transform duration-300 group-hover:scale-[1.02]" viewBox="0 0 320 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="goldStand" x1="60" y1="255" x2="260" y2="275" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#9e7625"/>
+                        <stop offset="50%" stop-color="#f6df9b"/>
+                        <stop offset="100%" stop-color="#9e7625"/>
+                    </linearGradient>
+                    <linearGradient id="bottomTier" x1="55" y1="175" x2="265" y2="245" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#172549"/>
+                        <stop offset="50%" stop-color="#233769"/>
+                        <stop offset="100%" stop-color="#121d3b"/>
+                    </linearGradient>
+                    <linearGradient id="topTier" x1="88" y1="115" x2="232" y2="175" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#1d2e59"/>
+                        <stop offset="50%" stop-color="#2b427d"/>
+                        <stop offset="100%" stop-color="#162347"/>
+                    </linearGradient>
+                    <linearGradient id="creamFrosting" x1="88" y1="112" x2="232" y2="142" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#fff8eb"/>
+                        <stop offset="100%" stop-color="#ebd7b2"/>
+                    </linearGradient>
+                    <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#fffbeb"/>
+                        <stop offset="45%" stop-color="#fbbf24"/>
+                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+
+                <!-- Luxury Cake Stand -->
+                <path d="M135 248 H185 L195 272 H125 L135 248 Z" fill="url(#goldStand)"/>
+                <ellipse cx="160" cy="274" rx="68" ry="8" fill="url(#goldStand)"/>
+                <ellipse cx="160" cy="246" rx="118" ry="12" fill="url(#goldStand)"/>
+
+                <!-- Bottom Tier -->
+                <rect x="62" y="175" width="196" height="68" rx="14" fill="url(#bottomTier)" stroke="#d8b467" stroke-width="1.5"/>
+                <!-- Gold Trim & Pearl Dots on Bottom Tier -->
+                <line x1="64" y1="232" x2="256" y2="232" stroke="#f3d689" stroke-width="2.5"/>
+                <circle cx="92" cy="208" r="3" fill="#f3d689"/>
+                <circle cx="126" cy="208" r="3" fill="#f3d689"/>
+                <circle cx="160" cy="208" r="3" fill="#f3d689"/>
+                <circle cx="194" cy="208" r="3" fill="#f3d689"/>
+                <circle cx="228" cy="208" r="3" fill="#f3d689"/>
+
+                <!-- Top Tier -->
+                <rect x="92" y="116" width="136" height="60" rx="12" fill="url(#topTier)" stroke="#d8b467" stroke-width="1.5"/>
+                <!-- Velvet Cream Drip Frosting -->
+                <path d="M92 126 C92 118, 100 116, 108 116 H212 C220 116, 228 118, 228 126 V136 C222 146, 214 146, 210 135 C205 150, 194 150, 190 135 C183 145, 174 145, 169 135 C163 152, 152 152, 147 135 C140 144, 130 144, 125 135 C119 149, 108 149, 104 135 C99 143, 94 142, 92 136 Z" fill="url(#creamFrosting)"/>
+
+                <!-- Three Gold-Striped Candles -->
+                <!-- Left Candle -->
+                <g id="candle-1">
+                    <rect x="116" y="76" width="10" height="40" rx="4" fill="#fdf8ee" stroke="#d8b467" stroke-width="1"/>
+                    <path d="M116 86 L126 92 M116 98 L126 104" stroke="#d8b467" stroke-width="2"/>
+                    <line x1="121" y1="70" x2="121" y2="76" stroke="#78350f" stroke-width="2"/>
+                    <g class="flame-group">
+                        <circle cx="121" cy="58" r="18" fill="url(#flameGlow)"/>
+                        <path class="candle-flame" d="M121 43 C127 52, 128 62, 121 67 C114 62, 115 52, 121 43 Z" fill="#fbbf24"/>
+                        <path class="candle-flame" d="M121 50 C124 55, 124 61, 121 64 C118 61, 118 55, 121 50 Z" fill="#ffffff"/>
+                    </g>
+                    <g class="smoke-group hidden">
+                        <circle class="smoke-wisp" cx="121" cy="62" r="4" fill="#cbd5e1"/>
+                        <circle class="smoke-wisp" cx="118" cy="54" r="3" fill="#94a3b8" style="animation-delay: 0.2s"/>
+                    </g>
+                </g>
+
+                <!-- Center Candle -->
+                <g id="candle-2">
+                    <rect x="155" y="68" width="10" height="48" rx="4" fill="#fdf8ee" stroke="#d8b467" stroke-width="1"/>
+                    <path d="M155 79 L165 85 M155 92 L165 98 M155 104 L165 110" stroke="#d8b467" stroke-width="2"/>
+                    <line x1="160" y1="62" x2="160" y2="68" stroke="#78350f" stroke-width="2"/>
+                    <g class="flame-group">
+                        <circle cx="160" cy="50" r="20" fill="url(#flameGlow)"/>
+                        <path class="candle-flame" d="M160 34 C167 44, 168 55, 160 60 C152 55, 153 44, 160 34 Z" fill="#fbbf24"/>
+                        <path class="candle-flame" d="M160 42 C163 47, 164 54, 160 57 C156 54, 157 47, 160 42 Z" fill="#ffffff"/>
+                    </g>
+                    <g class="smoke-group hidden">
+                        <circle class="smoke-wisp" cx="160" cy="55" r="4.5" fill="#cbd5e1"/>
+                        <circle class="smoke-wisp" cx="163" cy="46" r="3.5" fill="#94a3b8" style="animation-delay: 0.25s"/>
+                    </g>
+                </g>
+
+                <!-- Right Candle -->
+                <g id="candle-3">
+                    <rect x="194" y="76" width="10" height="40" rx="4" fill="#fdf8ee" stroke="#d8b467" stroke-width="1"/>
+                    <path d="M194 86 L204 92 M194 98 L204 104" stroke="#d8b467" stroke-width="2"/>
+                    <line x1="199" y1="70" x2="199" y2="76" stroke="#78350f" stroke-width="2"/>
+                    <g class="flame-group">
+                        <circle cx="199" cy="58" r="18" fill="url(#flameGlow)"/>
+                        <path class="candle-flame" d="M199 43 C205 52, 206 62, 199 67 C192 62, 193 52, 199 43 Z" fill="#fbbf24"/>
+                        <path class="candle-flame" d="M199 50 C202 55, 202 61, 199 64 C196 61, 196 55, 199 50 Z" fill="#ffffff"/>
+                    </g>
+                    <g class="smoke-group hidden">
+                        <circle class="smoke-wisp" cx="199" cy="62" r="4" fill="#cbd5e1"/>
+                        <circle class="smoke-wisp" cx="202" cy="54" r="3" fill="#94a3b8" style="animation-delay: 0.2s"/>
+                    </g>
+                </g>
+            </svg>
+
+            <p id="cakeSubHint" class="text-xs text-amber-200/60 tracking-widest uppercase mt-2">
+                Tap anywhere on the cake
+            </p>
+        </div>
+
+        <!-- Next Page Link (Appears right after candles are blown, or anytime if user wants) -->
+        <div class="pb-8 sm:pb-10 h-12 flex items-center justify-center">
+            <button id="toStage3Btn" class="hidden text-[11px] tracking-[0.26em] lowercase text-amber-200/75 hover:text-amber-100 transition-all duration-500 py-2 px-4 cursor-pointer">
+                visit next page &rarr;
+            </button>
+        </div>
+    </section>
+
+    <!-- STAGE 3: BESPOKE LUXURY LETTER PAGE -->
+    <section id="stage3" class="hidden relative z-30 w-full max-w-2xl px-4 sm:px-8 py-8 flex flex-col items-center justify-center min-h-screen">
+        
+        <!-- Textured Ivory & Gold Stationery Card -->
+        <article class="w-full stationery-card text-slate-900 rounded-2xl p-3 sm:p-5 shadow-[0_25px_70px_rgba(0,0,0,0.75)] animate-stage">
+            <!-- Outer Hairline Gold Foil Frame -->
+            <div class="border border-[#c59b43]/70 rounded-xl p-1.5 sm:p-2">
+                <!-- Inner Hairline Gold Foil Frame -->
+                <div class="border border-[#c59b43]/40 rounded-lg px-6 py-8 sm:px-11 sm:py-10 relative">
+                    
+                    <!-- Top Header Row: Left Side TOUFIQ, Right Side SAKIF -->
+                    <header class="flex items-center justify-between border-b border-[#c59b43]/35 pb-4 mb-7">
+                        <div class="text-left">
+                            <span class="block text-[9px] tracking-[0.28em] uppercase text-[#8f6d29] font-semibold">From</span>
+                            <span id="letterSenderLeft" class="text-sm sm:text-base tracking-[0.22em] uppercase font-bold text-slate-900">
+                                TOUFIQ
+                            </span>
+                        </div>
+
+                        <!-- Decorative Gold Diamond Divider -->
+                        <div class="w-2 h-2 rotate-45 bg-[#c59b43]/70"></div>
+
+                        <div class="text-right">
+                            <span class="block text-[9px] tracking-[0.28em] uppercase text-[#8f6d29] font-semibold">To</span>
+                            <span id="letterRecipientRight" class="text-sm sm:text-base tracking-[0.22em] uppercase font-bold text-slate-900">
+                                SAKIF
+                            </span>
+                        </div>
+                    </header>
+
+                    <!-- Editorial Letter Title -->
+                    <div class="text-center mb-6">
+                        <p class="text-[10px] tracking-[0.32em] uppercase text-[#8f6d29] font-semibold mb-1">
+                            On Your Special Day
+                        </p>
+                        <h2 class="text-2xl sm:text-3xl font-serif-luxury font-bold text-slate-900">
+                            A Note &amp; A Prayer For You
+                        </h2>
+                    </div>
+
+                    <!-- Heartfelt Body & Islamic Dua (Timeless & Reusable) -->
+                    <div class="space-y-4 font-editorial text-lg sm:text-[21px] leading-relaxed text-slate-800">
+                        <p>
+                            Today is a reminder of how grateful I am to have a genuine friend like you in my life. Through every laugh, conversation, and milestone, your presence has always meant a lot.
+                        </p>
+                        <p class="italic text-slate-900 bg-[#f3ead8]/80 border-l-2 border-[#c59b43] pl-4 py-2.5 rounded-r-md">
+                            “May Allah (SWT) bless your new year of life with endless barakah, sound health, peace of heart, and success in every step you take. May He protect you from all hardship and grant you the best in this world and the Akhirah. Ameen.”
+                        </p>
+                        <p>
+                            Wishing you a year filled with clarity, strength, and countless reasons to smile. Happy Birthday once again!
+                        </p>
+                    </div>
+
+                    <!-- Bottom Wax Seal & Signature Footer -->
+                    <footer class="mt-8 pt-5 border-t border-[#c59b43]/30 flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] tracking-[0.25em] uppercase text-slate-500">Warmest Wishes</p>
+                            <p id="letterSignOff" class="font-serif-luxury italic text-lg font-semibold text-slate-900 mt-0.5">
+                                Toufiq
+                            </p>
+                        </div>
+
+                        <!-- Gold Embossed Monogram Seal -->
+                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#d8b467] via-[#b88c32] to-[#8a651c] p-0.5 shadow-md flex items-center justify-center">
+                            <div class="w-full h-full rounded-full border border-[#fff3d1]/60 flex items-center justify-center text-[#fff8e7] font-serif-luxury font-bold text-xs tracking-widest">
+                                ★
+                            </div>
+                        </div>
+                    </footer>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- Subtle Replay Link Below Letter -->
+        <button id="replayBtn" class="mt-6 text-[11px] tracking-[0.25em] uppercase text-amber-200/45 hover:text-amber-200/90 transition-colors cursor-pointer">
+            Replay Surprise
+        </button>
+    </section>
+
+    <script>
+        // =========================================================================
+        // EASY CUSTOMIZATION FOR FUTURE FRIENDS:
+        // Change FRIEND_NAME below whenever you want to send this to another friend!
+        // =========================================================================
+        const FRIEND_NAME = "Sakif";
+        const SENDER_NAME = "Toufiq";
+
+        // Apply names cleanly to UI elements
+        document.getElementById('senderBadge').textContent = `A surprise from ${SENDER_NAME}`;
+        document.getElementById('friendHeroName').textContent = FRIEND_NAME;
+        document.getElementById('letterSenderLeft').textContent = SENDER_NAME.toUpperCase();
+        document.getElementById('letterRecipientRight').textContent = FRIEND_NAME.toUpperCase();
+        document.getElementById('letterSignOff').textContent = SENDER_NAME;
+
+        // =========================================================================
+        // 1. WEB AUDIO SYNTHESIZER (Mechanical Click, Chimes & Birthday Melody)
+        // =========================================================================
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playCordClickSound() {
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(210, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.08);
+                gain.gain.setValueAtTime(0.32, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.09);
+            } catch (e) {}
+        }
+
+        function playRevealChime() {
+            try {
+                initAudio();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                const now = audioCtx.currentTime;
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    const start = now + i * 0.085;
+                    osc.frequency.setValueAtTime(freq, start);
+                    gain.gain.setValueAtTime(0.001, start);
+                    gain.gain.linearRampToValueAtTime(0.14, start + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, start + 1.5);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(start);
+                    osc.stop(start + 1.55);
+                });
+            } catch (e) {}
+        }
+
+        function playBirthdayMelody() {
+            try {
+                initAudio();
+                // Gentle music-box "Happy Birthday" opening phrase
+                const melody = [
+                    { f: 392.00, d: 0.25 }, // G4
+                    { f: 392.00, d: 0.25 }, // G4
+                    { f: 440.00, d: 0.45 }, // A4
+                    { f: 392.00, d: 0.45 }, // G4
+                    { f: 523.25, d: 0.45 }, // C5
+                    { f: 493.88, d: 0.85 }  // B4
+                ];
+                let t = audioCtx.currentTime + 0.05;
+                melody.forEach(note => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(note.f, t);
+                    gain.gain.setValueAtTime(0.001, t);
+                    gain.gain.linearRampToValueAtTime(0.16, t + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + note.d + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(t);
+                    osc.stop(t + note.d + 0.3);
+                    t += note.d;
+                });
+            } catch (e) {}
+        }
+
+        // =========================================================================
+        // 2. CANVAS SETUP & PARTICLE FX (Dust Motes, Champagne Bokeh, Confetti)
+        // =========================================================================
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fxCtx = fxCanvas.getContext('2d');
+        const cordCanvas = document.getElementById('cordCanvas');
+        const cordCtx = cordCanvas.getContext('2d');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+
+        let isRevealed = false;
+        let isDragging = false;
+        let dragStartY = 0;
+        let hasClickedThreshold = false;
+
+        const cordAnchor = { x: width / 2, y: 0 };
+        let restLength = Math.min(height * 0.44, 290);
+        let triggerThreshold = restLength + 90;
+
+        const bob = {
+            x: width / 2,
+            y: restLength,
+            vx: 1.5,
+            vy: 0
+        };
+
+        function resizeAll() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            fxCanvas.width = width;
+            fxCanvas.height = height;
+            cordCanvas.width = width;
+            cordCanvas.height = height;
+
+            if (!isRevealed) {
+                cordAnchor.x = width / 2;
+                restLength = Math.min(height * 0.44, 290);
+                triggerThreshold = restLength + 90;
+                if (!isDragging) {
+                    bob.x = cordAnchor.x;
+                    bob.y = restLength;
+                }
+            }
+        }
+        window.addEventListener('resize', resizeAll);
+        resizeAll();
+
+        // Subtle atmospheric motes
+        const dustMotes = Array.from({ length: 42 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.8 + 0.6,
+            vx: (Math.random() - 0.5) * 0.28,
+            vy: (Math.random() - 0.5) * 0.28,
+            alpha: Math.random() * 0.35 + 0.1
+        }));
+
+        let confettiParticles = [];
+        class Confetti {
+            constructor(x, y, isFirework = false) {
+                this.x = x;
+                this.y = y;
+                // Champagne gold, ivory, warm rose-gold & royal sapphire sparkles
+                const colors = ['#f3d689', '#d8b467', '#fff8eb', '#fda4af', '#93c5fd'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const speed = isFirework ? (Math.random() * 6.5 + 2) : (Math.random() * 10 + 3);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed - (isFirework ? 1.5 : 3.2);
+                this.gravity = isFirework ? 0.08 : 0.15;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.011 + 0.006;
+                this.size = Math.random() * 5.5 + 3.5;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 9;
+                this.isDiamond = Math.random() > 0.45;
+            }
+            update() {
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+                this.rotation += this.rotSpeed;
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                if (this.isDiamond) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.size);
+                    ctx.lineTo(this.size * 0.6, 0);
+                    ctx.lineTo(0, this.size);
+                    ctx.lineTo(-this.size * 0.6, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size * 0.5);
+                }
+                ctx.restore();
+            }
+        }
+
+        function spawnBurst(x, y, count = 75, isFirework = false) {
+            for (let i = 0; i < count; i++) {
+                confettiParticles.push(new Confetti(x, y, isFirework));
+            }
+        }
+
+        // =========================================================================
+        // 3. PHYSICS PULL-CORD INTERACTION (STAGE 0)
+        // =========================================================================
+        function updateCordPhysics(time) {
+            if (isRevealed || isDragging) return;
+            const targetX = cordAnchor.x + Math.sin(time * 0.0018) * 13;
+            const targetY = restLength;
+            bob.vx = (bob.vx + (targetX - bob.x) * 0.045) * 0.88;
+            bob.vy = (bob.vy + (targetY - bob.y) * 0.14) * 0.82;
+            bob.x += bob.vx;
+            bob.y += bob.vy;
+        }
+
+        function drawCord() {
+            cordCtx.clearRect(0, 0, width, height);
+            if (isRevealed) return;
+
+            const pullProgress = Math.max(0, Math.min(1, (bob.y - restLength) / (triggerThreshold - restLength)));
+
+            // Warm champagne spotlight around pull handle
+            const glowRadius = 85 + pullProgress * 110;
+            const glow = cordCtx.createRadialGradient(bob.x, bob.y, 4, bob.x, bob.y, glowRadius);
+            glow.addColorStop(0, `rgba(216, 180, 103, ${0.18 + pullProgress * 0.35})`);
+            glow.addColorStop(1, 'rgba(216, 180, 103, 0)');
+            cordCtx.fillStyle = glow;
+            cordCtx.beginPath();
+            cordCtx.arc(bob.x, bob.y, glowRadius, 0, Math.PI * 2);
+            cordCtx.fill();
+
+            // Ceiling mount
+            cordCtx.fillStyle = '#8f6d29';
+            cordCtx.beginPath();
+            cordCtx.arc(cordAnchor.x, 0, 9, 0, Math.PI);
+            cordCtx.fill();
+
+            // Braided silk cord
+            const midX = (cordAnchor.x + bob.x) / 2;
+            const midY = (cordAnchor.y + bob.y) / 2;
+            cordCtx.strokeStyle = pullProgress > 0.7 ? '#fff1c9' : '#c59b43';
+            cordCtx.lineWidth = 2.8;
+            cordCtx.beginPath();
+            cordCtx.moveTo(cordAnchor.x, cordAnchor.y);
+            cordCtx.quadraticCurveTo(midX, midY, bob.x, bob.y - 16);
+            cordCtx.stroke();
+
+            // Metallic gold tassel & ring
+            cordCtx.save();
+            cordCtx.translate(bob.x, bob.y);
+
+            const capGrad = cordCtx.createLinearGradient(-9, -18, 9, -6);
+            capGrad.addColorStop(0, '#8f6d29');
+            capGrad.addColorStop(0.5, '#f6df9b');
+            capGrad.addColorStop(1, '#8f6d29');
+            cordCtx.fillStyle = capGrad;
+            cordCtx.beginPath();
+            cordCtx.roundRect(-8, -18, 16, 12, 4);
+            cordCtx.fill();
+
+            cordCtx.strokeStyle = '#f6df9b';
+            cordCtx.lineWidth = 3.5;
+            cordCtx.beginPath();
+            cordCtx.arc(0, 6, 14, 0, Math.PI * 2);
+            cordCtx.stroke();
+
+            cordCtx.fillStyle = `rgba(246, 223, 155, ${0.2 + pullProgress * 0.5})`;
+            cordCtx.beginPath();
+            cordCtx.arc(0, 6, 8, 0, Math.PI * 2);
+            cordCtx.fill();
+
+            cordCtx.restore();
+        }
+
+        function getPointerPos(e) {
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+            return { x: e.clientX, y: e.clientY };
+        }
+
+        let pointerDownPos = { x: 0, y: 0 };
+        let pointerDownTime = 0;
+
+        function onPointerDown(e) {
+            if (isRevealed) return;
+            initAudio();
+            const pos = getPointerPos(e);
+            pointerDownPos = pos;
+            pointerDownTime = Date.now();
+
+            const distToBob = Math.hypot(pos.x - bob.x, pos.y - bob.y);
+            if (distToBob < 110 || Math.abs(pos.x - bob.x) < 75) {
+                isDragging = true;
+                dragStartY = pos.y - bob.y;
+                hasClickedThreshold = false;
+            }
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging || isRevealed) return;
+            const pos = getPointerPos(e);
+            bob.y = Math.max(restLength - 15, Math.min(triggerThreshold + 40, pos.y - dragStartY));
+            bob.x = cordAnchor.x + (pos.x - cordAnchor.x) * 0.22;
+
+            if (bob.y >= triggerThreshold && !hasClickedThreshold) {
+                hasClickedThreshold = true;
+                playCordClickSound();
+                enterStage1();
+            }
+        }
+
+        function onPointerUp(e) {
+            if (isRevealed) return;
+            const elapsed = Date.now() - pointerDownTime;
+            const pos = e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY };
+            const movedDist = Math.hypot(pos.x - pointerDownPos.x, pos.y - pointerDownPos.y);
+
+            // Tap / click anywhere on cord triggers pull smoothly
+            if (elapsed < 380 && movedDist < 20) {
+                isDragging = false;
+                bob.y = triggerThreshold + 8;
+                playCordClickSound();
+                setTimeout(() => {
+                    if (!isRevealed) enterStage1();
+                }, 140);
+                return;
+            }
+            isDragging = false;
+        }
+
+        cordCanvas.addEventListener('mousedown', onPointerDown);
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+        cordCanvas.addEventListener('touchstart', onPointerDown, { passive: true });
+        window.addEventListener('touchmove', onPointerMove, { passive: true });
+        window.addEventListener('touchend', onPointerUp);
+
+        // Main Canvas Render Loop
+        function animate(time) {
+            updateCordPhysics(time);
+            drawCord();
+
+            fxCtx.clearRect(0, 0, width, height);
+
+            dustMotes.forEach(m => {
+                m.x += m.vx;
+                m.y += m.vy;
+                if (m.x < 0) m.x = width;
+                if (m.x > width) m.x = 0;
+                if (m.y < 0) m.y = height;
+                if (m.y > height) m.y = 0;
+
+                fxCtx.fillStyle = `rgba(246, 223, 155, ${m.alpha})`;
+                fxCtx.beginPath();
+                fxCtx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+                fxCtx.fill();
+            });
+
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                confettiParticles[i].update();
+                confettiParticles[i].draw(fxCtx);
+                if (confettiParticles[i].alpha <= 0) {
+                    confettiParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+
+        // =========================================================================
+        // 4. STAGE NAVIGATION & INTERACTIVE CAKE LOGIC
+        // =========================================================================
+        const pageBody = document.getElementById('pageBody');
+        const lightFlood = document.getElementById('lightFlood');
+        const mysteryPrompt = document.getElementById('mysteryPrompt');
+        const stage1 = document.getElementById('stage1');
+        const stage2 = document.getElementById('stage2');
+        const stage3 = document.getElementById('stage3');
+
+        function enterStage1() {
+            if (isRevealed) return;
+            isRevealed = true;
+
+            pageBody.style.backgroundColor = '#0d152a';
+            lightFlood.classList.remove('opacity-0');
+            lightFlood.classList.add('opacity-100');
+
+            mysteryPrompt.classList.add('opacity-0');
+            cordCanvas.style.pointerEvents = 'none';
+            cordCanvas.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+
+            playRevealChime();
+            spawnBurst(width * 0.5, height * 0.36, 95, false);
+            setTimeout(() => spawnBurst(width * 0.25, height * 0.45, 50, false), 220);
+            setTimeout(() => spawnBurst(width * 0.75, height * 0.45, 50, false), 400);
+
+            setTimeout(() => {
+                cordCanvas.classList.add('hidden');
+                mysteryPrompt.classList.add('hidden');
+                stage1.classList.remove('hidden');
+            }, 300);
+        }
+
+        // Stage 1 -> Stage 2 (Cake & Candles)
+        document.getElementById('toStage2Btn').addEventListener('click', () => {
+            stage1.classList.add('hidden');
+            stage2.classList.remove('hidden');
+            resetCandles();
+        });
+
+        // Interactive Candles Blow-Out
+        let candlesBlown = false;
+        const cakeInteractiveArea = document.getElementById('cakeInteractiveArea');
+        const cakePromptTitle = document.getElementById('cakePromptTitle');
+        const cakeSubHint = document.getElementById('cakeSubHint');
+        const candleHalo = document.getElementById('candleHalo');
+        const toStage3Btn = document.getElementById('toStage3Btn');
+
+        function resetCandles() {
+            candlesBlown = false;
+            cakePromptTitle.textContent = "Tap the candles to blow them out";
+            cakeSubHint.textContent = "Tap anywhere on the cake";
+            candleHalo.classList.remove('opacity-0');
+            toStage3Btn.classList.add('hidden');
+            document.querySelectorAll('.flame-group').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.smoke-group').forEach(el => el.classList.add('hidden'));
+        }
+
+        cakeInteractiveArea.addEventListener('click', () => {
+            if (candlesBlown) return;
+            candlesBlown = true;
+
+            // Extinguish flames & show rising smoke wisps
+            document.querySelectorAll('.flame-group').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.smoke-group').forEach(el => el.classList.remove('hidden'));
+            candleHalo.classList.add('opacity-0');
+
+            cakePromptTitle.textContent = "May all your wishes come true!";
+            cakeSubHint.textContent = "Ameen ✨";
+
+            playBirthdayMelody();
+            spawnBurst(width * 0.5, height * 0.38, 85, true);
+            setTimeout(() => spawnBurst(width * 0.3, height * 0.3, 55, true), 300);
+            setTimeout(() => spawnBurst(width * 0.7, height * 0.3, 55, true), 550);
+
+            // Reveal subtle "visit next page ->" link
+            setTimeout(() => {
+                toStage3Btn.classList.remove('hidden');
+            }, 650);
+        });
+
+        // Stage 2 -> Stage 3 (Luxury Letter Page)
+        toStage3Btn.addEventListener('click', () => {
+            stage2.classList.add('hidden');
+            stage3.classList.remove('hidden');
+            playRevealChime();
+            spawnBurst(width * 0.5, height * 0.25, 60, true);
+        });
+
+        // Replay Entire Experience
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            stage3.classList.add('hidden');
+            isRevealed = false;
+            isDragging = false;
+            hasClickedThreshold = false;
+            bob.x = width / 2;
+            bob.y = restLength;
+            bob.vx = 1.5;
+            bob.vy = 0;
+
+            pageBody.style.backgroundColor = '#080c17';
+            lightFlood.classList.remove('opacity-100');
+            lightFlood.classList.add('opacity-0');
+
+            cordCanvas.classList.remove('hidden', 'opacity-0');
+            cordCanvas.style.pointerEvents = 'auto';
+            mysteryPrompt.classList.remove('hidden', 'opacity-0');
+        });
+    </script>
+</body>
+</html>
